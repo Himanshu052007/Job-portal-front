@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Elevate - The Ultimate Job Portal & Prep Hub</title>
+  <meta name="description" content="Your all-in-one destination for job hunting, interview preparation, DSA sheets, and company hiring processes.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  
+  <nav class="navbar">
+    <div class="nav-brand">
+      <div class="logo-icon"></div>
+      <h1>Elevate.</h1>
+    </div>
+    <ul class="nav-links">
+      <li><a href="#" data-target="jobs-view" class="nav-item active">Jobs</a></li>
+      <li><a href="#" data-target="prep-view" class="nav-item">Prep Notes</a></li>
+      <li><a href="#" data-target="company-view" class="nav-item">Hiring Processes</a></li>
+      <li><a href="#" data-target="dsa-view" class="nav-item">DSA Sheet</a></li>
+    </ul>
+    <div class="nav-actions">
+      <button class="btn btn-outline">Log In</button>
+      <button class="btn btn-primary">Sign Up</button>
+    </div>
+  </nav>
+
+  <main class="app-container">
+    
+    <!-- JOBS VIEW -->
+    <section id="jobs-view" class="view-section active">
+      <header class="section-header">
+        <h2>Find Your Dream Role</h2>
+        <p>Explore thousands of opportunities tailored to your skills.</p>
+        <div class="search-bar">
+          <input type="text" placeholder="Search by role, company, or skills...">
+          <button class="btn btn-primary">Search</button>
+        </div>
+      </header>
+      
+      <div class="jobs-grid" id="jobs-container">
+        <!-- Rendered by JS -->
+      </div>
+    </section>
+
+    <!-- PREP NOTES VIEW -->
+    <section id="prep-view" class="view-section">
+      <header class="section-header">
+        <h2>Interview Preperation</h2>
+        <p>Master every stage of your interview process with our curated materials.</p>
+      </header>
+      
+      <div class="prep-categories">
+        <div class="category-card" data-category="aptitude">
+          <div class="card-icon aptitude-icon"></div>
+          <h3>Aptitude</h3>
+          <p>Quantitative, logical, and verbal reasoning practice.</p>
+        </div>
+        <div class="category-card" data-category="dsa">
+          <div class="card-icon dsa-icon"></div>
+          <h3>DSA</h3>
+          <p>Data Structures & Algorithms core concepts.</p>
+        </div>
+        <div class="category-card" data-category="technical">
+          <div class="card-icon tech-icon"></div>
+          <h3>Technical Core</h3>
+          <p>OS, DBMS, Computer Networks & System Design.</p>
+        </div>
+        <div class="category-card" data-category="hr">
+          <div class="card-icon hr-icon"></div>
+          <h3>HR & Soft Skills</h3>
+          <p>Behavioral questions and communication improvement.</p>
+        </div>
+      </div>
+
+      <div class="prep-content" id="prep-content-area">
+        <!-- Default text or rendered content -->
+        <div class="empty-state">
+          <h3>Select a category above to view notes and practice problems.</h3>
+        </div>
+      </div>
+    </section>
+
+    <!-- COMPANY PROCESS VIEW -->
+    <section id="company-view" class="view-section">
+      <header class="section-header">
+        <h2>Company Hiring Processes</h2>
+        <p>Get insights into exam patterns, syllabuses, and eligibility criteria of top companies.</p>
+      </header>
+
+      <div class="company-grid" id="company-container">
+        <!-- Rendered by JS -->
+      </div>
+
+      <!-- Modal for Company Details -->
+      <div class="modal" id="company-modal">
+        <div class="modal-content">
+          <span class="close-modal">&times;</span>
+          <div id="company-modal-body"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DSA SHEET VIEW -->
+    <section id="dsa-view" class="view-section">
+      <header class="section-header">
+        <h2>Dedicated DSA Sheet</h2>
+        <p>Track your progress across essential Data Structures and Algorithms topics.</p>
+        <div class="progress-bar-container">
+          <div class="progress-text">Overall Progress: <span id="overall-progress-text">0%</span></div>
+          <div class="progress-track">
+            <div class="progress-fill" id="overall-progress-fill"></div>
+          </div>
+        </div>
+      </header>
+
+      <div class="dsa-dashboard">
+        <aside class="topic-sidebar" id="dsa-topics-list">
+          <!-- Rendered by JS -->
+        </aside>
+        <div class="topic-problems" id="dsa-problems-list">
+          <div class="empty-state">
+            <h3>Select a topic to view problems.</h3>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
