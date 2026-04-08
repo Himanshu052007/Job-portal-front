@@ -2,11 +2,60 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 
+const admin = require('firebase-admin');
+
+// Initialize Firebase Admin securely
+let serviceAccount = null;
+try {
+  if (process.env.FIREBASE_CREDENTIALS) {
+    // Used when deployed to internet (Render)
+    serviceAccount = JSON.parse(process.env.FIREBASE_CREDENTIALS);
+  } else {
+    // Used when testing locally
+    serviceAccount = require('./serviceAccountKey.json');
+  }
+} catch (error) {
+  console.log("⚠️ Warning: Firebase credentials missing. Database features disabled.");
+}
+
+if (serviceAccount) {
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount)
+  });
+}
+
+// Mock db to prevent server crash if credentials are not found locally
+const db = serviceAccount ? admin.firestore() : {
+  collection: () => ({
+    get: async () => [],
+    add: async () => {},
+    doc: () => ({ set: async () => {} })
+  })
+};
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
+
+// Middleware: Log every visit to the website into Firebase
+app.use(async (req, res, next) => {
+  // Only log if they visited the root directory meaning they opened the website
+  if (req.path === '/' || req.path === '/index.html') {
+    try {
+      await db.collection('website_visits').add({
+        timestamp: admin.firestore.FieldValue.serverTimestamp(),
+        userAgent: req.headers['user-agent'],
+        ip: req.socket.remoteAddress
+      });
+      console.log('User visit logged to Firebase successfully!');
+    } catch (err) {
+      console.error('Error saving visit to Firebase:', err);
+    }
+  }
+  next();
+});
 
 // Serve static files from the current directory
 app.use(express.static(path.join(__dirname)));
@@ -169,20 +218,57 @@ app.get('/api/companies', (req, res) => {
   res.json(companyData);
 });
 
-// Get ALL DSA topics and problems
-app.get('/api/dsa', (req, res) => {
-  res.json(dsaTopics);
+// Get ALL DSA topics and problems (Merged with Firebase Progress)
+app.get('/api/dsa', async (req, res) => {
+  try {
+    // Clone topics so we don't permanently mutate the base hardcoded data
+    let topicsResponse = JSON.parse(JSON.stringify(dsaTopics));
+    
+    // Fetch user progress from Firebase
+    const snapshot = await db.collection('dsa_progress').get();
+    const progressMap = {};
+    snapshot.forEach(doc => {
+      progressMap[doc.id] = doc.data().done;
+    });
+    
+    // Merge Firebase progress into the response
+    topicsResponse.forEach(topic => {
+      topic.problems.forEach(prob => {
+        const key = `${topic.id}_${prob.id}`;
+        if (progressMap[key] !== undefined) {
+          prob.done = progressMap[key];
+        }
+      });
+    });
+    
+    res.json(topicsResponse);
+  } catch (err) {
+    console.error('Error fetching progress from Firebase:', err);
+    res.json(dsaTopics); // Fallback to hardcoded array if DB error occurs
+  }
 });
 
-// Toggle problem completion status
-app.post('/api/dsa/toggle', (req, res) => {
+// Toggle problem completion status and save to Firebase
+app.post('/api/dsa/toggle', async (req, res) => {
   const { topicId, problemId } = req.body;
   
   const topic = dsaTopics.find(t => t.id === topicId);
   if (topic) {
     const prob = topic.problems.find(p => p.id === problemId);
     if (prob) {
-      prob.done = !prob.done; // Toggle state
+      prob.done = !prob.done; // Toggle state in memory
+      
+      // Save the toggled state to Firebase Database
+      try {
+        await db.collection('dsa_progress').doc(`${topicId}_${problemId}`).set({
+          done: prob.done,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+        console.log(`Saved successfully: Problem ${topicId}_${problemId} is now ${prob.done ? 'DONE' : 'NOT DONE'}`);
+      } catch (err) {
+        console.error('Failed to save problem state to Firebase:', err);
+      }
+      
       return res.json({ success: true, problem: prob });
     }
   }
